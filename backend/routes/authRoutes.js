@@ -41,10 +41,10 @@
 import express from 'express';
 
 // TODO: Import controllers
-// import { registerUser, loginUser, getProfile } from '../controllers/authController.js';
+import { registerUser, loginUser, getProfile } from '../controllers/authController.js';
 
 // TODO: Import validation middleware
-// import { validateRegister, validateLogin, validate } from '../middleware/validationMiddleware.js';
+import { validateRegister, validateLogin, validate } from '../middleware/validationMiddleware.js';
 
 // TODO: Import auth middleware
 import { protect } from '../middleware/authMiddleware.js';
@@ -81,6 +81,8 @@ router.get('/test', (req, res) => {
 });
 
 router.get('/profile', protect, getProfile);
+router.post('/register', [validateRegister, validate], registerUser);
+router.post('/login', [validateLogin, validate], loginUser);
 
 // TODO: Add actual auth routes here
 
