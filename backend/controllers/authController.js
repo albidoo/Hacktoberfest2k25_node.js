@@ -80,20 +80,30 @@ export const registerUser = async (req, res, next) => {
 
     // 1. Extract data from request body
     const { name, email, password } = req.body;
+    console.log(name, email, password)
 
     // 2. Check if user already exists
-    // const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
+
+    if(existingUser){
+        return res.status(400).json({
+            success: false,
+            message: "User already exists"
+        })
+    }
 
     // 3. Create new user
-    // const user = await User.create({ name, email, password });
-
+    const user = await User.create({ name, email, password });
+    const {_id, role} = user;
     // 4. Generate token
-    // const token = user.generateAuthToken();
+    const token = user.generateAuthToken();
 
     // 5. Send response
-    res.status(501).json({
-      success: false,
-      message: 'Register endpoint not implemented yet',
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully!",
+      user: { id: _id, name, email, role },
+      token
     });
   } catch (error) {
     next(error);
@@ -147,22 +157,31 @@ export const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
 
     // 2. Find user by email (include password field)
-    // const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select('+password');
 
     // 3. Check if user exists
-    // if (!user) { return 401 error }
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
 
-    // 4. Verify password
-    // const isPasswordCorrect = await user.comparePassword(password);
-    // if (!isPasswordCorrect) { return 401 error }
+    // 4. Verify password (not mentioning specifically that its password thats wrong because someone might misuse this logs)
+    const isPasswordCorrect = await user.comparePassword(password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    const { _id, name, role } = user;
+
 
     // 5. Generate token
-    // const token = user.generateAuthToken();
+    const token = user.generateAuthToken();
 
     // 6. Send response (exclude password from response)
-    res.status(501).json({
-      success: false,
-      message: 'Login endpoint not implemented yet',
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      user: { id:_id, name, email, role },
+      token,
     });
   } catch (error) {
     next(error);
@@ -207,17 +226,33 @@ export const getProfile = async (req, res, next) => {
   try {
     // TODO: Implement get profile logic
 
+    //altho user will be there, just incase added it
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "User is not validated",
+      });
+    }
+
     // Option 1: Use req.user directly (set by protect middleware)
     // return res.status(200).json({ success: true, user: req.user });
 
     // Option 2: Fetch fresh data from database
     // const user = await User.findById(req.user.id).select('-password');
-    // if (!user) { return 404 error }
-    // return res.status(200).json({ success: true, user });
+    const user = await User.findById(req.user.id).select("-password");
 
-    res.status(501).json({
-      success: false,
-      message: 'Get profile endpoint not implemented yet',
+    // if (!user) { return 404 error }
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    // return res.status(200).json({ success: true, user });
+    return res.status(200).json({
+      success: true,
+      user,
     });
   } catch (error) {
     next(error);
