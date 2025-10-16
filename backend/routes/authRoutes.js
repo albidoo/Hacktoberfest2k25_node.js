@@ -47,7 +47,7 @@ import express from 'express';
 // import { validateRegister, validateLogin, validate } from '../middleware/validationMiddleware.js';
 
 // TODO: Import auth middleware
-// import { protect } from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -79,6 +79,8 @@ router.get('/test', (req, res) => {
     message: 'Auth routes not implemented yet',
   });
 });
+
+router.get('/profile', protect, getProfile);
 
 // TODO: Add actual auth routes here
 
